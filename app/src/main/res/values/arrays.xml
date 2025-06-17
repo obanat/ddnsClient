@@ -16,8 +16,8 @@
         <item>WIFI</item>
     </string-array>
     <string-array name="network_values">
-        <item>1</item>
-        <item>2</item>
+        <item>cell</item>
+        <item>wifi</item>
     </string-array>
     <string-array name="period_entries">
         <item>5分钟</item>

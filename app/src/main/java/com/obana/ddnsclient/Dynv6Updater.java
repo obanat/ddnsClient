@@ -32,6 +32,7 @@ public class Dynv6Updater {
     private static ConnectivityManager mCm;
 
     private static Handler mHandler;
+    private static boolean mFirstRun = false;
     public static void updateAAAAIfChanged(Context context, String zone, String token) {
 
         if (mCm == null || mNetwork == null) return;
@@ -42,9 +43,10 @@ public class Dynv6Updater {
 
         Log.i(TAG, "updateAAAAIfChanged cur：" + currentIp + " dns:" + dnsIp);
 
-        if (currentIp != null && !currentIp.equals(dnsIp)) {
+        if (mFirstRun || (currentIp != null && !currentIp.equals(dnsIp))) {
             updateDynv6Record(zone, token, currentIp);
             mHandler.sendMessage(Message.obtain(mHandler,1000));
+            mFirstRun = false;
         }
     }
 
@@ -53,6 +55,7 @@ public class Dynv6Updater {
         mNetwork = network;
         mHandler = handler;
         mCm = cm;
+        mFirstRun = true;
     }
 
 

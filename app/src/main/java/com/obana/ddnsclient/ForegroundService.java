@@ -43,9 +43,11 @@ public class ForegroundService extends Service {
     private String mZone = ZONE;
     private String mToken = TOAKEN;
     private long mPeriod = INTERVAL;
+    private boolean mIsCellNetwork = true;
     private Notification mNotification;
     private int mUpdateCount = 0;
-
+    private boolean mThreadRunning = false;
+    private ConnectivityManager.NetworkCallback networkCallback;
     @Override
     public void onCreate() {
 
@@ -58,6 +60,7 @@ public class ForegroundService extends Service {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         mZone = prefs.getString("pref_domain_name","");
         mToken = prefs.getString("pref_user_token","");
+        mIsCellNetwork = "cell".equals(prefs.getString("pref_network_type",""));
         String index = prefs.getString("pref_update_period","");
         if ("1".equals(index) ) {
             mPeriod = 5 *60 * 1000;
@@ -76,34 +79,18 @@ public class ForegroundService extends Service {
                 Log.i(TAG, "new message :" + msg.what);
                 if (msg.what == 1000) {
                     updateNotification();
+                } else if (msg.what == 1001) {
+                    updateNotification("蜂窝网络断开");
                 }
             }
         };
 
-
-        mDdnsThread = new Thread() {
-            @Override
-            public void run() {
-                while (true){
-
-                    Log.i(TAG, "---> Thread run once");
-                    executeDdnsTask();
-                    try {
-                        sleep(mPeriod);
-                    } catch (Exception e) {
-                        //throw new RuntimeException(e);
-                    }
-                }
-            }
-        };
-
-        mDdnsThread.setName("ddnsTask");
         requestCellNetwork();
     }
 
     private void executeDdnsTask() {
 
-        Dynv6Updater.updateAAAAIfChanged(this,mZone,TOAKEN);
+        Dynv6Updater.updateAAAAIfChanged(this,mZone,mToken);
         // 这里添加你的实际任务逻辑
     }
 
@@ -156,23 +143,51 @@ public class ForegroundService extends Service {
         NetworkRequest.Builder builder = new NetworkRequest.Builder();
         builder.addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET);
 
-        builder.addTransportType(NetworkCapabilities.TRANSPORT_CELLULAR);
+        if (mIsCellNetwork) {
+            builder.addTransportType(NetworkCapabilities.TRANSPORT_CELLULAR);
+        } else {
+            builder.addTransportType(NetworkCapabilities.TRANSPORT_WIFI);
+        }
 
-        NetworkRequest build = builder.build();
+        NetworkRequest request = builder.build();
         Log.i(TAG, "---> start request cell network ");
 
-        conMgr.requestNetwork(build, new ConnectivityManager.NetworkCallback() {
+        networkCallback = new ConnectivityManager.NetworkCallback() {
             @Override
             public void onAvailable(Network network) {
                 super.onAvailable(network);
                 Log.i(TAG, "---> request network OK! start connectRunnable...");
                 mNetwork = network;
                 Dynv6Updater.init(ForegroundService.this, mNetwork, conMgr, handler);
+                if (mDdnsThread != null && mThreadRunning) {
+                    mDdnsThread.interrupt();
+                    try {
+                        mDdnsThread.join(100); // 等待线程结束
+                    } catch (InterruptedException e) {
+                    }
+                }
+
+                mDdnsThread = new Thread() {
+                    @Override
+                    public void run() {
+                        while (true){
+                            Log.i(TAG, "---> Thread run once");
+                            executeDdnsTask();
+                            try {sleep(mPeriod);} catch (Exception e) {}
+                        }
+                    }
+                };
                 mDdnsThread.start();
+            };
+
+            @Override
+            public void onLost(Network network) {
+                super.onLost(network);
+                Log.d(TAG, "蜂窝网络已断开");
+                handler.sendMessage(Message.obtain(handler,1001));
             }
-        });
-
-
+        };
+        conMgr.registerNetworkCallback(request, networkCallback);
     }
     public void updateNotification() {
         mUpdateCount++;
@@ -182,6 +197,12 @@ public class ForegroundService extends Service {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm:ss");
         newContent= "上次更新:" + currentTime.format(formatter) + " [" + mUpdateCount + "]";
         Notification notification = createNotification("DDNS域名:"+mZone, newContent);
+        NotificationManager manager = getSystemService(NotificationManager.class);
+        manager.notify(NOTIFICATION_ID, notification);
+    }
+
+    public void updateNotification(String content) {
+        Notification notification = createNotification("DDNS域名:"+mZone,content);
         NotificationManager manager = getSystemService(NotificationManager.class);
         manager.notify(NOTIFICATION_ID, notification);
     }

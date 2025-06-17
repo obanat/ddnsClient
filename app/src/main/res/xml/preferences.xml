@@ -44,7 +44,7 @@
             android:summary="蜂窝"
             android:entries="@array/network_entries"
             android:entryValues="@array/network_values"
-            android:defaultValue="1"/>
+            android:defaultValue="cell"/>
     </PreferenceCategory>
 
     <!-- 单选按钮设置 -->
