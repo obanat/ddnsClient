@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="mode_entries">
+        <item>dnyv6</item>
+        <item>no-ip</item>
+        <item>DuckDNS</item>
+    </string-array>
+    <string-array name="mode_values">
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+    </string-array>
+
+    <string-array name="network_entries">
+        <item>蜂窝</item>
+        <item>WIFI</item>
+    </string-array>
+    <string-array name="network_values">
+        <item>1</item>
+        <item>2</item>
+    </string-array>
+    <string-array name="period_entries">
+        <item>5分钟</item>
+        <item>10分钟</item>
+        <item>30分钟</item>
+        <item>10秒-测速用途</item>
+    </string-array>
+    <string-array name="period_values">
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+        <item>4</item>
+    </string-array>
+</resources>

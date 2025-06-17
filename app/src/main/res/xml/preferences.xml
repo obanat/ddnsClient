@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- 下拉列表设置 -->
+    <PreferenceCategory android:title="常规设置">
+        <ListPreference
+            android:enabled="false"
+            android:key="pref_service_provider"
+            android:title="选择DNS服务商"
+            android:summary="当前服务商"
+            android:entries="@array/mode_entries"
+            android:entryValues="@array/mode_values"
+            android:defaultValue="1"/>
+
+        <EditTextPreference
+            android:key="pref_domain_name"
+            android:title="域名"
+            android:summary="未设置"
+            android:dialogTitle="请输入域名"
+            android:defaultValue="my.ddns.com"/>
+
+        <EditTextPreference
+            android:key="pref_user_name"
+            android:title="用户名(可选)"
+            android:summary="未设置"
+            android:dialogTitle="请输入用户名"
+            android:defaultValue="user"/>
+
+        <EditTextPreference
+            android:key="pref_user_token"
+            android:title="TOKEN/密码"
+            android:summary="******"
+            android:dialogTitle="请输入TOKEN/密码"
+            android:defaultValue="****"/>
+        <ListPreference
+            android:key="pref_update_period"
+            android:title="更新周期"
+            android:summary="10分钟"
+            android:entries="@array/period_entries"
+            android:entryValues="@array/period_values"
+            android:defaultValue="2"/>
+        <ListPreference
+            android:key="pref_network_type"
+            android:title="选择网络类型"
+            android:summary="蜂窝"
+            android:entries="@array/network_entries"
+            android:entryValues="@array/network_values"
+            android:defaultValue="1"/>
+    </PreferenceCategory>
+
+    <!-- 单选按钮设置 -->
+    <PreferenceCategory android:title="服务设置">
+        <SwitchPreference
+            android:key="pref_service_onoff"
+            android:title="启动/停止服务"
+            android:defaultValue="false"/>
+    </PreferenceCategory>
+
+
+</PreferenceScreen>
